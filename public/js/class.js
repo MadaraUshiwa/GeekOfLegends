@@ -4,6 +4,12 @@ class Boss {
         this.pv = pv;
         this.pa = pa;
     }
+
+    attaquer(hero) {
+        hero.recevoirDegats(this.pa);
+        console.log(`${this.nom} attaque ${hero.nom} avec ${this.pa} points de dégâts.`);
+        console.log(`PV de ${hero.nom} après l'attaque : ${hero.pv}`);
+    }
 }
 
 class Hero {
@@ -14,7 +20,7 @@ class Hero {
         this.aggro = aggro;
         this.pointsDeRage = 0;
         this.attaqueBonus = 0;
-        this.posture = "normal"; 
+        this.posture = "normal";
     }
 
     gagnerPointDeRage() {
@@ -47,12 +53,13 @@ class Hero {
         let degats = this.pa;
 
         if (this.posture === "defense") {
-            degats *= 0.5; 
+            degats *= 0.5;
             this.pv *= 2.5;
-            this.aggro += 2; 
+            this.aggro += 2;
         } else if (this.posture === "attack") {
-            degats *= 1.4; 
-            this.pv *= 0.75; 
+            degats *= 1.4;
+            degats += this.attaqueBonus;
+            this.pv *= 0.75;
         }
 
         boss.pv -= degats;
@@ -74,66 +81,73 @@ class War extends Hero {
         super(nom, pv, pa, aggro);
         this.rage = 0;
     }
-}
-
-class Hunt extends Hero {
-    constructor(nom, pv, pa, aggro) {
-        super(nom, pv, pa, aggro);
-        this.arc = Math.floor(Math.random() * 5) + 7;
-    }
 
     attaquer(boss) {
-        if (this.arc > 1) {
-            this.arc -= 2;
-            boss.pv -= this.pa;
-            console.log(`Le Hunt ${this.nom} attaque ${boss.nom} avec ${this.arc} points.`);
-            console.log(`Une flèche récupérée lors de l'attaque réussie.`);
-            this.arc += 1;
-        } else {
-            console.log(`Le Hunt ${this.nom} n'a pas assez de flèches pour attaquer.`);
-            this.arc = 6;
+        super.attaquer(boss);
+
+        this.regenererRage();
+
+        if (this.posture === "attack" && this.attaqueBonus > 0) {
+            this.gagnerPointDeRage();
         }
+    }
+
+    regenererRage() {
+        if (this.rage < 4) {
+            this.rage += 1;
+            console.log(`${this.nom} a régénéré 1 point de rage. Total de rage : ${this.rage}`);
+        }
+    }
+
+    gagnerPointDeRage() {
+        super.gagnerPointDeRage();
+
+        if (this.pointsDeRage === 4) {
+            this.gagnerBonusAttaqueWar();
+        }
+    }
+
+    gagnerBonusAttaqueWar() {
+        this.attaqueBonus = 0.25;
+
+        setTimeout(() => {
+            this.remettreAZeroBonus();
+        }, 1000);
     }
 }
 
-class Mage extends Hero {
-    constructor(nom, pv, pa, aggro) {
-        super(nom, pv, pa, aggro);
-        let manaTab = [7, 9, 11];
-        this.mana = manaTab[Math.floor(Math.random() * manaTab.length)];
-    }
+function afficherMessageBienvenue() {
+    console.log("Bienvenue dans l'Arène des Héros, un monde mystique où seuls les plus courageux survivent et prospèrent ! Vous êtes sur le point d'entreprendre une quête épique, affrontant des boss redoutables et des défis surprenants. Voici les règles du jeu :");
 
-    attaquer(boss) {
-        if (this.mana > 2) {
-            this.mana -= 2;
-            boss.pv -= this.pa;
-            console.log(`Le Mage ${this.nom} attaque ${boss.nom} avec ${this.pa} points de dégâts.`);
-        } else {
-            console.log(`Le Mage ${this.nom} manque de mana !`);
-            this.mana += 7;
-        }
-    }
+    console.log("1. Choisissez vos héros : Formez une équipe de héros intrépides parmi trois classes uniques - le puissant War, le mystique Mage, et le rusé Hunt.");
+    console.log("2. Personnalisez vos héros : Chaque héros peut choisir entre trois postures - l'attaque, la défense, et la normale. Chacune offre des avantages distincts, mais choisissez judicieusement selon les défis qui se présentent.");
+    console.log("3. Affrontez les Boss : Partez à l'assaut de monstres légendaires comme Sauron, Chronos et Lilith. Utilisez vos compétences, votre stratégie et vos bonus spéciaux pour les vaincre.");
+    console.log("4. Gagnez des Points de Rage : Les guerriers gagnent des Points de Rage à chaque tour. Lorsqu'ils atteignent 4 points, ils déclenchent une attaque féroce avec un bonus de puissance.");
+    console.log("5. Survivez et Progressez : Surmontez chaque défi, gagnez des points d'expérience, améliorez vos héros et découvrez de nouvelles capacités pour devenir le champion ultime.");
+    console.log("🪓Préparez-vous, Héros, l'aventure commence maintenant !🪓");
 }
 
-function creerHero() {
-    const typeHero = prompt("Choisissez le type de héros (war, hunt, mage) :");
-    const nom = prompt("Entrez le nom du héros :");
+function creerHero(typeHero, welcomeMessage) {
+    if (welcomeMessage) {
+        afficherMessageBienvenue();
+    }
 
+    const nom = prompt(`Entrez un prénom pour votre ${typeHero} :`);
     let pv, pa, aggro;
 
     switch (typeHero.toLowerCase()) {
         case "war":
-            pv = 250;
+            pv = 1250;
             pa = 43;
             aggro = 100;
             break;
         case "hunt":
-            pv = 190;
+            pv = 1050;
             pa = 29;
             aggro = 100;
             break;
         case "mage":
-            pv = 150;      
+            pv = 1150;
             pa = 29;
             aggro = 100;
             break;
@@ -148,29 +162,60 @@ function creerHero() {
     const posture = prompt("Choisissez la posture du héros (attack, defense, normal) :");
     if (posture.toLowerCase() === "defense") {
         aggro *= 1.5;
-        pa /= 2;
-        pv *= 2.5;
     }
 
-    return new Hero(nom, pv, pa, aggro);
+    if (typeHero.toLowerCase() === "war") {
+        return new War(nom, pv, pa, aggro);
+    } else {
+        return new Hero(nom, pv, pa, aggro);
+    }
 }
 
 const bossList = [
-    new Boss("Sauron", 450, 23),
-    new Boss("Chronos", 550, 19),
-    new Boss("Lilith", 750, 20),
+    new Boss("Sauron", 1250, 23),
+    new Boss("Chronos", 1450, 19),
+    new Boss("Lilith", 1750, 20),
 ];
 
 const heroList = [
-    creerHero(),
-    creerHero(),
-    creerHero(),
+    creerHero("war", true),
+    creerHero("mage", false),
+    creerHero("hunt", false),
 ];
 
-for (let i = 0; i < 6; i++) {
+function effectuerTour() {
     for (const hero of heroList) {
-        hero.gagnerPointDeRage();
-        hero.attaquer(bossList[0]); 
-        console.log(`PV du boss après l'attaque : ${bossList[0].pv}`);
+        setTimeout(() => {
+            hero.gagnerPointDeRage();
+            hero.attaquer(bossList[0]);
+            console.log(`PV du boss après l'attaque : ${bossList[0].pv}`);
+        }, 1000); 
     }
+
+    setTimeout(() => {
+        for (const hero of heroList) {
+            if (hero.pv > 0) {
+                bossList[0].attaquer(hero);
+            }
+        }
+    }, 1000); 
 }
+
+function simulerPartie() {
+    const intervalId = setInterval(() => {
+        if (heroList.some(hero => hero.pv > 0) && bossList[0].pv > 0) {
+            effectuerTour();
+        } else {
+            clearInterval(intervalId);
+
+            if (bossList[0].pv <= 0) {
+                console.log("🙌Félicitations ! Vous avez vaincu le boss et remporté la victoire !🙌");
+            } else {
+                console.log("💀Oh non ! Les héros ont été vaincus. Le boss a triomphé en cette sombre journée.💀");
+            }
+        }
+    }, 2000); 
+}
+
+simulerPartie();
+
