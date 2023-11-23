@@ -1,3 +1,27 @@
+class Sort {
+    constructor(nom) {
+        this.nom = nom;
+    }
+}
+
+class FrappeHeroique extends Sort {
+    constructor() {
+        super("Frappe héroïque");
+    }
+}
+
+class EmbrasementSupreme extends Sort {
+    constructor() {
+        super("Embrasement suprême");
+    }
+}
+
+class TirMortel extends Sort {
+    constructor() {
+        super("Tir mortel");
+    }
+}
+
 class Boss {
     constructor(nom, pv, pa) {
         this.nom = nom;
@@ -7,7 +31,7 @@ class Boss {
 
     attaquer(hero) {
         hero.recevoirDegats(this.pa);
-        console.log(`${this.nom} attaque ${hero.nom} avec ${this.pa} points de dégâts.`);
+        console.log(`${this.nom} attaque ${hero.nom} avec 👾Ombreflamme👾 et inflige ${this.pa} points de dégâts d'ombre!.`);
         console.log(`PV de ${hero.nom} après l'attaque : ${hero.pv}`);
     }
 }
@@ -21,6 +45,7 @@ class Hero {
         this.pointsDeRage = 0;
         this.attaqueBonus = 0;
         this.posture = "normal";
+        this.sort = new Sort("Attaque normale");
     }
 
     gagnerPointDeRage() {
@@ -63,7 +88,7 @@ class Hero {
         }
 
         boss.pv -= degats;
-        console.log(`${this.nom} attaque ${boss.nom} avec ${degats} points de dégâts.`);
+        console.log(`${this.nom} attaque ${boss.nom} avec ${this.sort.nom} et inflige ${degats} points de dégâts.`);
         console.log(`PV du boss après l'attaque : ${boss.pv}`);
     }
 
@@ -80,11 +105,11 @@ class War extends Hero {
     constructor(nom, pv, pa, aggro) {
         super(nom, pv, pa, aggro);
         this.rage = 0;
+        this.sort = new FrappeHeroique();
     }
 
     attaquer(boss) {
         super.attaquer(boss);
-
         this.regenererRage();
 
         if (this.posture === "attack" && this.attaqueBonus > 0) {
@@ -116,6 +141,20 @@ class War extends Hero {
     }
 }
 
+class Mage extends Hero {
+    constructor(nom, pv, pa, aggro) {
+        super(nom, pv, pa, aggro);
+        this.sort = new EmbrasementSupreme();
+    }
+}
+
+class Hunt extends Hero {
+    constructor(nom, pv, pa, aggro) {
+        super(nom, pv, pa, aggro);
+        this.sort = new TirMortel();
+    }
+}
+
 function afficherMessageBienvenue() {
     console.log("Bienvenue dans l'Arène des Héros, un monde mystique où seuls les plus courageux survivent et prospèrent ! Vous êtes sur le point d'entreprendre une quête épique, affrontant des boss redoutables et des défis surprenants. Voici les règles du jeu :");
 
@@ -137,85 +176,90 @@ function creerHero(typeHero, welcomeMessage) {
 
     switch (typeHero.toLowerCase()) {
         case "war":
-            pv = 1250;
+            pv = 850;
             pa = 43;
             aggro = 100;
             break;
         case "hunt":
-            pv = 1050;
+            pv = 750;
             pa = 29;
             aggro = 100;
             break;
-        case "mage":
-            pv = 1150;
-            pa = 29;
-            aggro = 100;
-            break;
-        default:
-            console.log("Type de héros invalide. Les valeurs par défaut seront utilisées.");
-            pv = 1000;
-            pa = 30;
-            aggro = 100;
-            break;
+            case "mage":
+                pv = 950;
+                pa = 29;
+                aggro = 100;
+                break;
+            default:
+                console.log("Type de héros invalide. Les valeurs par défaut seront utilisées.");
+                pv = 1000;
+                pa = 30;
+                aggro = 100;
+                break;
+        }
+    
+        const posture = prompt("Choisissez la posture du héros (attack, defense, normal) :");
+        if (posture.toLowerCase() === "defense") {
+            aggro *= 1.5;
+        }
+    
+        switch (typeHero.toLowerCase()) {
+            case "war":
+                return new War(nom, pv, pa, aggro);
+            case "hunt":
+                return new Hunt(nom, pv, pa, aggro);
+            case "mage":
+                return new Mage(nom, pv, pa, aggro);
+            default:
+                return new Hero(nom, pv, pa, aggro);
+        }
     }
-
-    const posture = prompt("Choisissez la posture du héros (attack, defense, normal) :");
-    if (posture.toLowerCase() === "defense") {
-        aggro *= 1.5;
-    }
-
-    if (typeHero.toLowerCase() === "war") {
-        return new War(nom, pv, pa, aggro);
-    } else {
-        return new Hero(nom, pv, pa, aggro);
-    }
-}
-
-const bossList = [
-    new Boss("Sauron", 1250, 23),
-    new Boss("Chronos", 1450, 19),
-    new Boss("Lilith", 1750, 20),
-];
-
-const heroList = [
-    creerHero("war", true),
-    creerHero("mage", false),
-    creerHero("hunt", false),
-];
-
-function effectuerTour() {
-    for (const hero of heroList) {
-        setTimeout(() => {
-            hero.gagnerPointDeRage();
-            hero.attaquer(bossList[0]);
-            console.log(`PV du boss après l'attaque : ${bossList[0].pv}`);
-        }, 1000); 
-    }
-
-    setTimeout(() => {
+    
+    const bossList = [
+        new Boss("Sauron", 550, 23),
+        new Boss("Chronos", 750, 19),
+        new Boss("Lilith", 750, 20)
+    ];
+    
+    const heroList = [
+        creerHero("war", true),
+        creerHero("mage", false),
+        creerHero("hunt", false),
+    ];
+    
+    function effectuerTour() {
         for (const hero of heroList) {
-            if (hero.pv > 0) {
-                bossList[0].attaquer(hero);
-            }
+            setTimeout(() => {
+                hero.gagnerPointDeRage();
+                hero.attaquer(bossList[0]);
+                console.log(`PV du boss après l'attaque : ${bossList[0].pv}`);
+            }, 1000);
         }
-    }, 1000); 
-}
-
-function simulerPartie() {
-    const intervalId = setInterval(() => {
-        if (heroList.some(hero => hero.pv > 0) && bossList[0].pv > 0) {
-            effectuerTour();
-        } else {
-            clearInterval(intervalId);
-
-            if (bossList[0].pv <= 0) {
-                console.log("🙌Félicitations ! Vous avez vaincu le boss et remporté la victoire !🙌");
+    
+        setTimeout(() => {
+            for (const hero of heroList) {
+                if (hero.pv > 0) {
+                    bossList[0].attaquer(hero);
+                }
+            }
+        }, 1000);
+    }
+    
+    function simulerPartie() {
+        const intervalId = setInterval(() => {
+            if (heroList.some(hero => hero.pv > 0) && bossList[0].pv > 0) {
+                effectuerTour();
             } else {
-                console.log("💀Oh non ! Les héros ont été vaincus. Le boss a triomphé en cette sombre journée.💀");
+                clearInterval(intervalId);
+    
+                if (bossList[0].pv <= 0) {
+                    console.log("🙌Félicitations ! Vous avez vaincu le boss et remporté la victoire !🙌");
+                } else {
+                    console.log("💀Oh non ! Les héros ont été vaincus. Le boss a triomphé en cette sombre journée.💀");
+                }
             }
-        }
-    }, 2000); 
-}
-
-simulerPartie();
-
+        }, 2000);
+    }
+    
+    simulerPartie();
+    
