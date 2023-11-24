@@ -26,13 +26,58 @@ class Boss {
     constructor(nom, pv, pa) {
         this.nom = nom;
         this.pv = pv;
+        this.pvInitial = pv;
         this.pa = pa;
+        this.enigmes = [
+            { question: "Comment s'appelle le frère de Sasuke?", reponse: "itachi" },
+            { question: "Qui est Tobi de l'Akatsuki?", reponse: "obito" },
+            { question: "Comment s'appelle Kyubi?", reponse: "kurama" }
+        ];
     }
 
     attaquer(hero) {
         hero.recevoirDegats(this.pa);
         console.log(`${this.nom} attaque ${hero.nom} avec 👾Ombreflamme👾 et inflige ${this.pa} points de dégâts d'ombre!.`);
         console.log(`PV de ${hero.nom} après l'attaque : ${hero.pv}`);
+    }
+
+    choisirCible(heroes) {
+        const ciblesPossibles = heroes.filter(hero => hero.pv > 0);
+        if (ciblesPossibles.length > 0) {
+            const ciblePrioritaire = ciblesPossibles.reduce((prioritaire, hero) => {
+                return hero.aggro > prioritaire.aggro ? hero : prioritaire;
+            });
+            return ciblePrioritaire;
+        } else {
+            return null;
+        }
+    }
+
+    attaquerCible(hero) {
+        this.attaquer(hero);
+        if (this.pv <= 0.2 * this.pvInitial) {
+            this.poserEnigme(hero);
+        }
+    }
+
+    poserEnigme(hero) {
+        const enigme = this.enigmes[Math.floor(Math.random() * this.enigmes.length)];
+        const reponseAttendue = enigme.reponse;
+
+        for (let i = 0; i < 3; i++) {
+            const reponseUtilisateur = prompt(`${enigme.question}`).toLowerCase().replace(/\s/g, '');
+
+            if (reponseUtilisateur === reponseAttendue) {
+                console.log("🎉 Bravo ! Vous avez résolu l'énigme. Le boss est affaibli ! 🎉");
+                this.pv -= 50; 
+                return;
+            } else {
+                console.log("❌ Mauvaise réponse. Essayez encore !");
+            }
+        }
+
+        console.log("💀 Trop d'erreurs ! L'énigme a eu raison de vous. 💀");
+        hero.pv = 0; 
     }
 }
 
@@ -76,7 +121,7 @@ class Hero {
 
     attaquer(boss) {
         let degats = this.pa;
-
+    
         if (this.posture === "defense") {
             degats *= 0.5;
             this.pv *= 2.5;
@@ -86,11 +131,16 @@ class Hero {
             degats += this.attaqueBonus;
             this.pv *= 0.75;
         }
-
+    
         boss.pv -= degats;
         console.log(`${this.nom} attaque ${boss.nom} avec ${this.sort.nom} et inflige ${degats} points de dégâts.`);
         console.log(`PV du boss après l'attaque : ${boss.pv}`);
+    
+        if (boss.pv <= 0.2 * boss.pvInitial) {
+            boss.poserEnigme(this);
+        }
     }
+    
 
     defense() {
         this.posture = "defense";
@@ -263,3 +313,5 @@ function creerHero(typeHero, welcomeMessage) {
     
     simulerPartie();
     
+
+
