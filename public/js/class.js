@@ -213,7 +213,7 @@ class War extends Hero {
     }
 
     gagnerBonusAttaqueWar() {
-        this.attaqueBonus = 0.25;
+        this.attaqueBonus = pa * 1.25;
 
         setTimeout(() => {
             this.remettreAZeroBonus();
@@ -346,6 +346,7 @@ function simulerPartie() {
             if (bossList[0].pv <= 0) {
                 console.log("🙌Félicitations ! Vous avez vaincu le boss et remporté la victoire !🙌");
                 console.log(`"Tu viens de gagner 🎯 ${Math.floor(Math.random() * 100)} d'XP`);
+                console.log(`"L'equipe de héros viennent de gagner un équpiment d'armure ainsi que 🪙 ${Math.floor(Math.random() * 100)} pièce d'or`);
             } else {
                 console.log("💀Oh non ! Les héros ont été vaincus. Le boss a triomphé en cette sombre journée.💀");
             }
