@@ -125,7 +125,7 @@ class Hero {
         if (this.posture === "defense") {
             degats *= 0.5;
             this.pv *= 2.5;
-            this.aggro += 2;
+            this.aggro += 50;
         } else if (this.posture === "attack") {
             degats *= 1.4;
             degats += this.attaqueBonus;
@@ -191,19 +191,57 @@ class War extends Hero {
     }
 }
 
+
 class Mage extends Hero {
     constructor(nom, pv, pa, aggro) {
         super(nom, pv, pa, aggro);
         this.sort = new EmbrasementSupreme();
     }
+
+    attaquer(boss) {
+        super.attaquer(boss);
+        this.gererMana();
+    }
+
+    gererMana() {
+        if (this.pv > 0) {
+            this.pa -= 2;
+
+            if (this.pa < 0) {
+                console.log(`${this.nom} n'a plus de mana. Il passe un tour sans attaquer.`);
+                this.pa = 0;
+                setTimeout(() => {
+                    this.recupererMana();
+                }, 1000);
+            }
+        }
+    }
+
+    recupererMana() {
+        console.log(`${this.nom} récupère 7 points de mana.`);
+        this.pa += 7;
+    }
 }
+
 
 class Hunt extends Hero {
     constructor(nom, pv, pa, aggro) {
         super(nom, pv, pa, aggro);
         this.sort = new TirMortel();
+        this.nbFleches = 6;
+    }
+
+    attaquer(boss) {
+        if (this.nbFleches >= 2) {
+            super.attaquer(boss);
+            this.nbFleches -= 2;
+        } else {
+            console.log(`${this.nom} n'a plus de flèches. Il passe un tour.`);
+            this.nbFleches += 6;
+        }
     }
 }
+
 
 function afficherMessageBienvenue() {
     console.log("Bienvenue dans l'Arène des Héros, un monde mystique où seuls les plus courageux survivent et prospèrent ! Vous êtes sur le point d'entreprendre une quête épique, affrontant des boss redoutables et des défis surprenants. Voici les règles du jeu :");
@@ -304,6 +342,7 @@ function creerHero(typeHero, welcomeMessage) {
     
                 if (bossList[0].pv <= 0) {
                     console.log("🙌Félicitations ! Vous avez vaincu le boss et remporté la victoire !🙌");
+                    console.log(`"Tu viens de gagner 🎯 ${Math.floor(Math.random() * 100)} d'XP`);
                 } else {
                     console.log("💀Oh non ! Les héros ont été vaincus. Le boss a triomphé en cette sombre journée.💀");
                 }
@@ -315,3 +354,4 @@ function creerHero(typeHero, welcomeMessage) {
     
 
 
+ 
